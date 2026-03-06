@@ -43,3 +43,21 @@ def list_requirements(hc_id: int, db: sqlite3.Connection = Depends(get_db)):
     cursor.execute("SELECT * FROM requirements WHERE hc_id = ?", (hc_id,))
     rows = cursor.fetchall()
     return [dict(row) for row in rows]
+
+@router.get("/requirements/{req_id}/shortlisted")
+def get_shortlisted_for_hc(req_id: int, db: sqlite3.Connection = Depends(get_db)):
+    """Returns shortlisted contractor submission data for a given requirement (for HC view)."""
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT sc.contractor_id, u.name as contractor_name,
+               s.worker_ids, s.readiness_date,
+               COALESCE(s.workers_committed, 0) as workers_committed,
+               COALESCE(s.workers_ready, 0) as workers_ready,
+               COALESCE(s.workers_to_onboard, 0) as workers_to_onboard
+        FROM shortlisted_contractors sc
+        JOIN users u ON sc.contractor_id = u.id
+        LEFT JOIN submissions s ON s.contractor_id = sc.contractor_id AND s.requirement_id = sc.requirement_id
+        WHERE sc.requirement_id = ?
+    ''', (req_id,))
+    rows = cursor.fetchall()
+    return [dict(row) for row in rows]

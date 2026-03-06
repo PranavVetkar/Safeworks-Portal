@@ -17,8 +17,54 @@ def get_db():
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+def migrate_db():
+    """Safely apply schema migrations on existing DB (idempotent)."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # Add new columns to submissions if missing
+    existing_cols = [row[1] for row in cursor.execute("PRAGMA table_info(submissions)").fetchall()]
+    new_cols = [
+        ('workers_committed', 'INTEGER DEFAULT 0'),
+        ('workers_ready', 'INTEGER DEFAULT 0'),
+        ('workers_to_onboard', 'INTEGER DEFAULT 0'),
+    ]
+    for col_name, col_def in new_cols:
+        if col_name not in existing_cols:
+            cursor.execute(f'ALTER TABLE submissions ADD COLUMN {col_name} {col_def}')
+
+    # Add area_of_experience to workers if missing
+    worker_cols = [row[1] for row in cursor.execute("PRAGMA table_info(workers)").fetchall()]
+    if 'area_of_experience' not in worker_cols:
+        cursor.execute("ALTER TABLE workers ADD COLUMN area_of_experience TEXT DEFAULT 'General Construction'")
+
+    # Create worker_courses table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS worker_courses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        worker_id INTEGER,
+        course_name TEXT,
+        FOREIGN KEY(worker_id) REFERENCES workers(id)
+    )
+    ''')
+
+    # Create shortlisted_contractors table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS shortlisted_contractors (
+        requirement_id INTEGER,
+        contractor_id INTEGER,
+        PRIMARY KEY(requirement_id, contractor_id),
+        FOREIGN KEY(requirement_id) REFERENCES requirements(id),
+        FOREIGN KEY(contractor_id) REFERENCES users(id)
+    )
+    ''')
+
+    conn.commit()
+    conn.close()
+
 def init_db():
     if os.path.exists(DB_FILE):
+        migrate_db()  # Always apply migrations to existing DB
         return
     
     conn = sqlite3.connect(DB_FILE)
@@ -68,8 +114,31 @@ def init_db():
         requirement_id INTEGER,
         contractor_id INTEGER,
         worker_ids TEXT,
-        suggested_rate REAL,
         readiness_date TEXT,
+        workers_committed INTEGER DEFAULT 0,
+        workers_ready INTEGER DEFAULT 0,
+        workers_to_onboard INTEGER DEFAULT 0,
+        FOREIGN KEY(requirement_id) REFERENCES requirements(id),
+        FOREIGN KEY(contractor_id) REFERENCES users(id)
+    )
+    ''')
+
+    # Create worker_courses table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS worker_courses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        worker_id INTEGER,
+        course_name TEXT,
+        FOREIGN KEY(worker_id) REFERENCES workers(id)
+    )
+    ''')
+
+    # Create shortlisted_contractors table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS shortlisted_contractors (
+        requirement_id INTEGER,
+        contractor_id INTEGER,
+        PRIMARY KEY(requirement_id, contractor_id),
         FOREIGN KEY(requirement_id) REFERENCES requirements(id),
         FOREIGN KEY(contractor_id) REFERENCES users(id)
     )

@@ -8,7 +8,7 @@ import { ApiService, Requirement, Worker } from '../../services/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './contractor.component.html',
-  styleUrl: './contractor.component.css' // We will reuse isn.component.css layout styles
+  styleUrl: './contractor.component.css'
 })
 export class ContractorComponent implements OnInit {
   Object = Object;
@@ -22,9 +22,15 @@ export class ContractorComponent implements OnInit {
 
   // Submission Form
   selectedWorkers: number[] = [];
-  proposedRate: number = 0;
   readinessDate: string = '';
+  workersCommitted: number = 0;
+  workersReady: number = 0;
+  workersToOnboard: number = 0;
   isSubmitting = false;
+
+  // Course management: workerId -> Set of assigned course names
+  assignedCourses: { [workerId: number]: Set<string> } = {};
+  courseLoading: { [workerId: number]: boolean } = {};
 
   get contractorId(): number {
     return parseInt(localStorage.getItem('userId') || '5', 10);
@@ -41,8 +47,8 @@ export class ContractorComponent implements OnInit {
       this.workers = data;
       if (this.workers.length === 0) {
         this.workers = [
-          { id: 101, name: 'John Doe', contractor_id: 1, certifications: 'OSHA 30, First Aid', years_experience: 5 },
-          { id: 102, name: 'Jane Smith', contractor_id: 1, certifications: 'Master Electrician, Safety Pro', years_experience: 8 }
+          { id: 101, name: 'John Doe', contractor_id: this.contractorId, certifications: 'OSHA 30, First Aid', years_experience: 5, area_of_experience: 'Electrical' },
+          { id: 102, name: 'Jane Smith', contractor_id: this.contractorId, certifications: 'Master Electrician, Safety Pro', years_experience: 8, area_of_experience: 'Scaffolding' }
         ];
       }
     });
@@ -52,6 +58,7 @@ export class ContractorComponent implements OnInit {
     this.selectedRequirement = req;
     this.compatibilityResults = {};
     this.selectedWorkers = [];
+    this.assignedCourses = {};
   }
 
   checkCompatibility() {
@@ -66,16 +73,50 @@ export class ContractorComponent implements OnInit {
           this.compatibilityResults[w.id] = res;
           checksCompleted++;
           if (checksCompleted === this.workers.length) this.isChecking = false;
+          // Load existing assigned courses for this worker
+          this.loadWorkerCourses(w.id);
         },
         error: (err) => {
           console.error(err);
-          // Fallback if API fails
           this.compatibilityResults[w.id] = { match_percentage: Math.floor(Math.random() * 40) + 40, suggested_courses: ['Fallback Course'] };
           checksCompleted++;
           if (checksCompleted === this.workers.length) this.isChecking = false;
+          this.loadWorkerCourses(w.id);
         }
       });
     });
+  }
+
+  loadWorkerCourses(workerId: number) {
+    this.apiService.getWorkerCourses(workerId).subscribe({
+      next: (courses) => {
+        this.assignedCourses[workerId] = new Set(courses);
+      },
+      error: () => {
+        this.assignedCourses[workerId] = new Set();
+      }
+    });
+  }
+
+  isCourseAssigned(workerId: number, course: string): boolean {
+    return this.assignedCourses[workerId]?.has(course) ?? false;
+  }
+
+  toggleCourse(workerId: number, course: string) {
+    if (this.isCourseAssigned(workerId, course)) {
+      this.apiService.removeWorkerCourse(workerId, course).subscribe({
+        next: () => {
+          this.assignedCourses[workerId].delete(course);
+        }
+      });
+    } else {
+      this.apiService.assignWorkerCourse(workerId, course).subscribe({
+        next: () => {
+          if (!this.assignedCourses[workerId]) this.assignedCourses[workerId] = new Set();
+          this.assignedCourses[workerId].add(course);
+        }
+      });
+    }
   }
 
   toggleWorker(id: number) {
@@ -95,8 +136,10 @@ export class ContractorComponent implements OnInit {
       requirement_id: this.selectedRequirement.id!,
       contractor_id: this.contractorId,
       worker_ids: this.selectedWorkers.join(','),
-      suggested_rate: this.proposedRate,
-      readiness_date: this.readinessDate
+      readiness_date: this.readinessDate,
+      workers_committed: this.workersCommitted,
+      workers_ready: this.workersReady,
+      workers_to_onboard: this.workersToOnboard
     };
 
     this.apiService.submitApplication(sub).subscribe({

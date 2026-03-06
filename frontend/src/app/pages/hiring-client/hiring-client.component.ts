@@ -15,6 +15,11 @@ export class HiringClientComponent implements OnInit {
   selectedRequirement: Requirement | null = null;
   isCreatingNew: boolean = false;
 
+  // Tab control for the detail view
+  hcActiveTab: 'details' | 'vendor' = 'details';
+  shortlistedVendors: any[] = [];
+  isLoadingVendors = false;
+
   newRequirement: Requirement = {
     name: '',
     description: '',
@@ -38,25 +43,34 @@ export class HiringClientComponent implements OnInit {
 
   loadRequirements() {
     this.apiService.getRequirements(this.hcId).subscribe({
-      next: (reqs) => {
-        this.requirements = reqs;
-      },
-      error: (err) => {
-        console.error("Failed to load requirements", err);
-      }
+      next: (reqs) => { this.requirements = reqs; },
+      error: (err) => { console.error('Failed to load requirements', err); }
     });
   }
 
   selectRequirement(req: Requirement) {
     this.selectedRequirement = req;
     this.isCreatingNew = false;
+    this.hcActiveTab = 'details';
+    this.shortlistedVendors = [];
     this.successMessage = '';
     this.errorMessage = '';
+    this.loadShortlistedVendors(req.id!);
+  }
+
+  loadShortlistedVendors(reqId: number) {
+    this.isLoadingVendors = true;
+    this.apiService.getShortlistedForHC(reqId).subscribe({
+      next: (data) => { this.shortlistedVendors = data; this.isLoadingVendors = false; },
+      error: () => { this.shortlistedVendors = []; this.isLoadingVendors = false; }
+    });
   }
 
   startNewRequirement() {
     this.selectedRequirement = null;
     this.isCreatingNew = true;
+    this.hcActiveTab = 'details';
+    this.shortlistedVendors = [];
     this.successMessage = '';
     this.errorMessage = '';
     this.newRequirement = {
@@ -79,6 +93,8 @@ export class HiringClientComponent implements OnInit {
         this.loadRequirements();
         this.isCreatingNew = false;
         this.selectedRequirement = res;
+        this.shortlistedVendors = [];
+        this.loadShortlistedVendors(res.id!);
       },
       error: (err) => {
         this.errorMessage = 'Failed to publish requirement. Please try again.';

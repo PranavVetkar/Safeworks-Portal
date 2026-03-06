@@ -17,6 +17,7 @@ export interface Worker {
     contractor_id: number;
     certifications: string;
     years_experience: number;
+    area_of_experience?: string;
 }
 
 export interface Submission {
@@ -24,8 +25,10 @@ export interface Submission {
     requirement_id: number;
     contractor_id?: number;
     worker_ids: string;
-    suggested_rate: number;
     readiness_date: string;
+    workers_committed: number;
+    workers_ready: number;
+    workers_to_onboard: number;
 }
 
 @Injectable({
@@ -43,13 +46,16 @@ export class ApiService {
 
     // --- Hiring Client ---
     createRequirement(req: Requirement, hcId: number): Observable<Requirement> {
-        // Send hc_id merged into the requirement object
         const payload = { ...req, hc_id: hcId };
         return this.http.post<Requirement>(`${this.baseUrl}/hc/requirements/`, payload);
     }
 
     getRequirements(hcId: number): Observable<Requirement[]> {
         return this.http.get<Requirement[]>(`${this.baseUrl}/hc/requirements/${hcId}`);
+    }
+
+    getShortlistedForHC(reqId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/hc/requirements/${reqId}/shortlisted`);
     }
 
     // --- Safeworks ---
@@ -69,6 +75,18 @@ export class ApiService {
         return this.http.get<any[]>(`${this.baseUrl}/safeworks/submissions/${reqId}`);
     }
 
+    getSubmissionWorkers(reqId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/safeworks/submissions/${reqId}/workers`);
+    }
+
+    shortlistContractors(reqId: number, contractorIds: number[]): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/safeworks/requirements/${reqId}/shortlist`, { contractor_ids: contractorIds });
+    }
+
+    getShortlistedContractors(reqId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/safeworks/requirements/${reqId}/shortlisted`);
+    }
+
     // --- Contractor ---
     getAssignedRequirements(contractorId: number): Observable<Requirement[]> {
         return this.http.get<Requirement[]>(`${this.baseUrl}/contractor/requirements/${contractorId}`);
@@ -84,5 +102,17 @@ export class ApiService {
 
     submitApplication(sub: Submission): Observable<Submission> {
         return this.http.post<Submission>(`${this.baseUrl}/contractor/submissions`, sub);
+    }
+
+    getWorkerCourses(workerId: number): Observable<string[]> {
+        return this.http.get<string[]>(`${this.baseUrl}/contractor/workers/${workerId}/courses`);
+    }
+
+    assignWorkerCourse(workerId: number, courseName: string): Observable<any> {
+        return this.http.post<any>(`${this.baseUrl}/contractor/workers/${workerId}/courses`, { course_name: courseName });
+    }
+
+    removeWorkerCourse(workerId: number, courseName: string): Observable<any> {
+        return this.http.request('DELETE', `${this.baseUrl}/contractor/workers/${workerId}/courses`, { body: { course_name: courseName } });
     }
 }

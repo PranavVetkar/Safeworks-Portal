@@ -166,3 +166,115 @@
     background: rgba(37, 99, 235, 0.05);
     border-color: rgba(37, 99, 235, 0.3);
 }
+
+/* HC Tabs */
+.hc-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.tab-btn.active {
+    color: var(--color-primary);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-primary);
+    border-radius: 2px;
+}
+
+.tab-count {
+    font-size: 0.8rem;
+    background: rgba(37, 99, 235, 0.15);
+    color: var(--color-primary);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    margin-left: 0.2rem;
+}
+
+.shortlisted-chip {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.info-section {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.info-section h5 {
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+/* Vendor comparison table */
+.vendor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    color: #212529;
+    border: 1px solid #dee2e6;
+}
+
+.vendor-table th,
+.vendor-table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.vendor-table thead {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    color: #212529;
+    border: 1px solid #dee2e6;
+}
+
+.table th,
+.table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.table thead {
+    background-color: rgba(0, 0, 0, 0.05);
+}

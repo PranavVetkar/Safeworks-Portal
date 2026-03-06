@@ -58,10 +58,17 @@
                         </div>
                     </div>
 
+                    <!-- AI Suggested Courses with assign/remove toggles -->
                     <div class="suggestions" *ngIf="compatibilityResults[w.id]?.suggested_courses?.length > 0">
-                        <span class="text-muted" style="font-size: 0.85rem;">AI Suggestions: </span>
-                        <span class="course-badge" *ngFor="let c of compatibilityResults[w.id].suggested_courses">{{ c
-                            }}</span>
+                        <span class="text-muted" style="font-size: 0.85rem; display:block; margin-bottom: 0.5rem;">AI
+                            Suggested Courses:</span>
+                        <div class="course-chips">
+                            <div class="course-chip" *ngFor="let c of compatibilityResults[w.id].suggested_courses"
+                                [class.assigned]="isCourseAssigned(w.id, c)" (click)="toggleCourse(w.id, c)">
+                                <span class="chip-icon">{{ isCourseAssigned(w.id, c) ? '✓' : '+' }}</span>
+                                <span>{{ c }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -69,20 +76,37 @@
                 <div class="submission-form form-card"
                     style="margin-top: 2rem; padding: 1.5rem; background: rgba(15, 23, 42, 0.4); border-radius: 8px;">
                     <h3>Submit Proposal</h3>
+
+                    <!-- Worker Count Row -->
+                    <div class="form-row" style="margin-top: 1rem; gap: 1rem; display: flex; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 140px;">
+                            <label class="form-label" for="workersCommitted">Workers Committed</label>
+                            <input type="number" id="workersCommitted" name="workersCommitted"
+                                [(ngModel)]="workersCommitted" class="form-control" min="0" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 140px;">
+                            <label class="form-label" for="workersReady">Workers Ready</label>
+                            <input type="number" id="workersReady" name="workersReady" [(ngModel)]="workersReady"
+                                class="form-control" min="0" required>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 140px;">
+                            <label class="form-label" for="workersToOnboard">To Be Onboarded Soon</label>
+                            <input type="number" id="workersToOnboard" name="workersToOnboard"
+                                [(ngModel)]="workersToOnboard" class="form-control" min="0" required>
+                        </div>
+                    </div>
+
+                    <!-- Readiness Date -->
                     <div class="form-row" style="margin-top: 1rem; gap: 1rem; display: flex;">
-                        <!-- <div class="form-group" style="flex: 1;">
-                            <label class="form-label" for="rate">Proposed Rate ($/hr)</label>
-                            <input type="number" id="rate" name="rate" [(ngModel)]="proposedRate" class="form-control"
-                                required min="1">
-                        </div> -->
                         <div class="form-group" style="flex: 1;">
-                            <label class="form-label" for="readyDate">Readiness Date</label>
+                            <label class="form-label" for="readyDate">Date of Readiness</label>
                             <input type="date" id="readyDate" name="readyDate" [(ngModel)]="readinessDate"
                                 class="form-control" required>
                         </div>
                     </div>
+
                     <button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" (click)="submitApplication()"
-                        [disabled]="selectedWorkers.length === 0 || !proposedRate || !readinessDate || isSubmitting">
+                        [disabled]="selectedWorkers.length === 0 || !readinessDate || isSubmitting">
                         {{ isSubmitting ? 'Submitting...' : 'Apply Now' }}
                     </button>
                 </div>

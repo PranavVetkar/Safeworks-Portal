@@ -150,15 +150,6 @@
     white-space: nowrap;
 }
 
-.suggestions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    padding-top: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 .course-badge {
     background: rgba(59, 130, 246, 0.1);
     color: #60a5fa;
@@ -166,4 +157,57 @@
     padding: 0.2rem 0.6rem;
     border-radius: 4px;
     font-size: 0.8rem;
+}
+
+/* Interactive course chip styles */
+.suggestions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.course-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.course-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(59, 130, 246, 0.08);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.course-chip:hover {
+    background: rgba(59, 130, 246, 0.18);
+    transform: translateY(-1px);
+}
+
+.course-chip.assigned {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.course-chip.assigned:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.chip-icon {
+    font-size: 0.85rem;
+    font-weight: 700;
 }

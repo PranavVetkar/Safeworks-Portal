@@ -143,6 +143,41 @@
     font-size: 1.1rem;
 }
 
+/* Container for the table to allow scrolling if needed */
+.info-section {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    /* Essential for border visibility */
+    margin-bottom: 1rem;
+    color: #212529;
+    border: 1px solid #dee2e6;
+    /* Outside border */
+}
+
+.table th,
+.table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    /* Inner cell borders */
+    text-align: left;
+    vertical-align: middle;
+}
+
+.table thead {
+    background-color: rgba(0, 0, 0, 0.05);
+    /* Slight tint for header */
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    /* Subtle hover effect */
+}
+
 .desc-box {
     background: var(--color-background-secondary);
     padding: 1.5rem;
@@ -220,4 +255,66 @@
 
 .mt-3 {
     margin-top: 1rem;
+}
+
+/* Report Sub-Tabs (inside Vendor Submissions tab) */
+.report-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+}
+
+.report-tab-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.report-tab-btn:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--color-primary);
+}
+
+.report-tab-btn.active {
+    background: rgba(37, 99, 235, 0.12);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Shortlist / success-soft button state */
+.btn-success-soft {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    cursor: default;
+}
+
+/* Per-contractor tab header */
+.contractor-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.shortlist-badge {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
 }

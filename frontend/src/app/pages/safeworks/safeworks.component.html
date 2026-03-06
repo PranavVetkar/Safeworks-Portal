@@ -25,7 +25,7 @@
             </div>
             <div class="tabs">
                 <button class="tab-btn" [class.active]="activeTab === 'details'" (click)="activeTab = 'details'">Details
-                    & Assignment</button>
+                    &amp; Assignment</button>
                 <button class="tab-btn" [class.active]="activeTab === 'submissions'"
                     (click)="activeTab = 'submissions'">Vendor Submissions</button>
             </div>
@@ -78,25 +78,52 @@
             </div>
         </div>
 
-        <!-- Tab Content: Submissions -->
+        <!-- Tab Content: Vendor Submissions -->
         <div class="detail-body" *ngIf="activeTab === 'submissions'">
-            <div class="info-section">
-                <h5>Cumulative Tabular Report</h5>
-                <table class="table" *ngIf="submissions.length > 0">
-                    <thead>
+
+            <!-- Report Sub-Tabs -->
+            <div class="report-tabs" *ngIf="submissions.length > 0">
+                <button class="report-tab-btn" [class.active]="activeReportTab === 'cumulative'"
+                    (click)="setReportTab('cumulative')">
+                    Cumulative Report
+                </button>
+                <button class="report-tab-btn" *ngFor="let sub of submissions"
+                    [class.active]="activeReportTab === 'contractor_' + sub.contractor_id"
+                    (click)="setReportTab('contractor_' + sub.contractor_id)">
+                    {{ sub.contractor_name }}
+                </button>
+            </div>
+
+            <!-- Tab 1: Cumulative Report -->
+            <div class="info-section" *ngIf="activeReportTab === 'cumulative'">
+                <h5>Cumulative Contractor Comparison</h5>
+                <table class="table table-bordered table-hover" *ngIf="submissions.length > 0">
+                    <thead class="table-light">
                         <tr>
-                            <th>Vendor</th>
-                            <th>Rate ($/hr)</th>
-                            <th>Readiness Date</th>
-                            <th>Action</th>
+                            <th>Contractor</th>
+                            <th>Workers Committed</th>
+                            <th>Workers Ready</th>
+                            <th>To Be Onboarded</th>
+                            <th>Date of Readiness</th>
+                            <th>Shortlist</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let sub of submissions">
-                            <td>{{ sub.contractor_name }}</td>
-                            <td>${{ sub.suggested_rate }}</td>
+                            <td><strong>{{ sub.contractor_name }}</strong></td>
+                            <td>{{ sub.workers_committed }}</td>
+                            <td>{{ sub.workers_ready }}</td>
+                            <td>{{ sub.workers_to_onboard }}</td>
                             <td>{{ sub.readiness_date }}</td>
-                            <td><button class="btn btn-sm btn-secondary">Shortlist</button></td>
+                            <td>
+                                <button class="btn btn-sm"
+                                    [class.btn-success-soft]="shortlistedIds.has(sub.contractor_id)"
+                                    [class.btn-secondary]="!shortlistedIds.has(sub.contractor_id)"
+                                    (click)="toggleShortlist(sub.contractor_id)"
+                                    [disabled]="shortlistedIds.has(sub.contractor_id) || isShortlisting">
+                                    {{ shortlistedIds.has(sub.contractor_id) ? '✓ Shortlisted' : 'Shortlist' }}
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -104,6 +131,39 @@
                     <p>No vendor submissions yet.</p>
                 </div>
             </div>
+
+            <!-- Tab 2..N: Per-Contractor Worker Detail -->
+            <ng-container *ngFor="let sub of submissions">
+                <div class="info-section" *ngIf="activeReportTab === 'contractor_' + sub.contractor_id">
+                    <div class="contractor-header-row">
+                        <h5>{{ sub.contractor_name }} — Selected Workers</h5>
+                        <span class="shortlist-badge" *ngIf="shortlistedIds.has(sub.contractor_id)">✓ Shortlisted</span>
+                    </div>
+                    <table class="table table-bordered table-hover"
+                        *ngIf="getWorkersForContractor(sub.contractor_id).length > 0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Worker Name</th>
+                                <th>Area of Experience</th>
+                                <th>Years of Experience</th>
+                                <th>Certifications</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let w of getWorkersForContractor(sub.contractor_id)">
+                                <td><strong>{{ w.name }}</strong></td>
+                                <td>{{ w.area_of_experience || 'General Construction' }}</td>
+                                <td>{{ w.years_experience }}</td>
+                                <td>{{ w.certifications }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="empty-state" *ngIf="getWorkersForContractor(sub.contractor_id).length === 0">
+                        <p>No worker details available for this contractor.</p>
+                    </div>
+                </div>
+            </ng-container>
+
         </div>
     </div>
 

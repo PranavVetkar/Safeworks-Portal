@@ -18,8 +18,10 @@ class SubmissionCreate(BaseModel):
     requirement_id: int
     contractor_id: int
     worker_ids: str
-    suggested_rate: float
     readiness_date: str
+    workers_committed: int = 0
+    workers_ready: int = 0
+    workers_to_onboard: int = 0
 
 @router.get("/requirements/{contractor_id}")
 def get_assigned_requirements(contractor_id: int, db: sqlite3.Connection = Depends(get_db)):
@@ -71,12 +73,41 @@ def check_compatibility(req_id: int, worker_id: int, db: sqlite3.Connection = De
 def create_submission(submission: SubmissionCreate, db: sqlite3.Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute('''
-        INSERT INTO submissions (requirement_id, contractor_id, worker_ids, suggested_rate, readiness_date)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (submission.requirement_id, submission.contractor_id, submission.worker_ids, submission.suggested_rate, submission.readiness_date))
+        INSERT INTO submissions (requirement_id, contractor_id, worker_ids, readiness_date, workers_committed, workers_ready, workers_to_onboard)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (submission.requirement_id, submission.contractor_id, submission.worker_ids, submission.readiness_date,
+          submission.workers_committed, submission.workers_ready, submission.workers_to_onboard))
     db.commit()
     sub_id = cursor.lastrowid
     
     cursor.execute("SELECT * FROM submissions WHERE id = ?", (sub_id,))
     row = cursor.fetchone()
     return dict(row)
+
+
+class CourseAssign(BaseModel):
+    course_name: str
+
+@router.get("/workers/{worker_id}/courses")
+def get_worker_courses(worker_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("SELECT course_name FROM worker_courses WHERE worker_id = ?", (worker_id,))
+    rows = cursor.fetchall()
+    return [row['course_name'] for row in rows]
+
+@router.post("/workers/{worker_id}/courses")
+def assign_worker_course(worker_id: int, body: CourseAssign, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    # Avoid duplicates
+    cursor.execute("SELECT id FROM worker_courses WHERE worker_id = ? AND course_name = ?", (worker_id, body.course_name))
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO worker_courses (worker_id, course_name) VALUES (?, ?)", (worker_id, body.course_name))
+        db.commit()
+    return {"message": "Course assigned"}
+
+@router.delete("/workers/{worker_id}/courses")
+def remove_worker_course(worker_id: int, body: CourseAssign, db: sqlite3.Connection = Depends(get_db)):
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM worker_courses WHERE worker_id = ? AND course_name = ?", (worker_id, body.course_name))
+    db.commit()
+    return {"message": "Course removed"}

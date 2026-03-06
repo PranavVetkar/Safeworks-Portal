@@ -48,7 +48,14 @@ def check_worker_compatibility(requirement_details: dict, worker_details: dict) 
         }}
         """
         try:
-            response = model.generate_content(prompt)
+            # response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config={
+                    'system_instruction': 'You are a professional document generator. Never speak in the first person. Never provide introductory or concluding remarks. Provide only the requested document.'
+                }
+            )
             import json
             text = response.text.strip()
             if text.startswith("```json"):
