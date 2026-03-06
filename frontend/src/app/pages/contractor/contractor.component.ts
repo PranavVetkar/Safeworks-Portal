@@ -23,10 +23,20 @@ export class ContractorComponent implements OnInit {
   // Submission Form
   selectedWorkers: number[] = [];
   readinessDate: string = '';
-  workersCommitted: number = 0;
-  workersReady: number = 0;
-  workersToOnboard: number = 0;
   isSubmitting = false;
+
+  // Auto-calculated submission counts (used in template & submitApplication)
+  get workersCommitted(): number {
+    return this.selectedWorkers.length;
+  }
+  get workersReady(): number {
+    return this.selectedWorkers.filter(
+      id => (this.compatibilityResults[id]?.match_percentage ?? 0) > 80
+    ).length;
+  }
+  get workersToOnboard(): number {
+    return this.workersCommitted - this.workersReady;
+  }
 
   // Course management: workerId -> Set of assigned course names
   assignedCourses: { [workerId: number]: Set<string> } = {};
@@ -132,14 +142,21 @@ export class ContractorComponent implements OnInit {
     if (!this.selectedRequirement || this.selectedWorkers.length === 0) return;
     this.isSubmitting = true;
 
+    // Auto-calculate worker counts from compatibility results
+    const committed = this.selectedWorkers.length;
+    const ready = this.selectedWorkers.filter(
+      id => (this.compatibilityResults[id]?.match_percentage ?? 0) > 80
+    ).length;
+    const toOnboard = committed - ready;
+
     const sub = {
       requirement_id: this.selectedRequirement.id!,
       contractor_id: this.contractorId,
       worker_ids: this.selectedWorkers.join(','),
       readiness_date: this.readinessDate,
-      workers_committed: this.workersCommitted,
-      workers_ready: this.workersReady,
-      workers_to_onboard: this.workersToOnboard
+      workers_committed: committed,
+      workers_ready: ready,
+      workers_to_onboard: toOnboard
     };
 
     this.apiService.submitApplication(sub).subscribe({

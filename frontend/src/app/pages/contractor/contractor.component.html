@@ -74,30 +74,27 @@
 
                 <!-- Submission Form -->
                 <div class="submission-form form-card"
-                    style="margin-top: 2rem; padding: 1.5rem; background: rgba(15, 23, 42, 0.4); border-radius: 8px;">
+                    style="margin-top: 2rem; padding: 1.5rem; background: rgba(173, 197, 255, 0.6); border-radius: 8px;">
                     <h3>Submit Proposal</h3>
 
-                    <!-- Worker Count Row -->
-                    <div class="form-row" style="margin-top: 1rem; gap: 1rem; display: flex; flex-wrap: wrap;">
-                        <div class="form-group" style="flex: 1; min-width: 140px;">
-                            <label class="form-label" for="workersCommitted">Workers Committed</label>
-                            <input type="number" id="workersCommitted" name="workersCommitted"
-                                [(ngModel)]="workersCommitted" class="form-control" min="0" required>
+                    <!-- Auto-calculated worker summary -->
+                    <div class="worker-summary-row">
+                        <div class="summary-stat">
+                            <span class="summary-label">Workers Committed</span>
+                            <span class="summary-value committed">{{ workersCommitted }}</span>
                         </div>
-                        <div class="form-group" style="flex: 1; min-width: 140px;">
-                            <label class="form-label" for="workersReady">Workers Ready</label>
-                            <input type="number" id="workersReady" name="workersReady" [(ngModel)]="workersReady"
-                                class="form-control" min="0" required>
+                        <div class="summary-stat">
+                            <span class="summary-label">Ready <small>(match &gt; 80%)</small></span>
+                            <span class="summary-value ready">{{ workersReady }}</span>
                         </div>
-                        <div class="form-group" style="flex: 1; min-width: 140px;">
-                            <label class="form-label" for="workersToOnboard">To Be Onboarded Soon</label>
-                            <input type="number" id="workersToOnboard" name="workersToOnboard"
-                                [(ngModel)]="workersToOnboard" class="form-control" min="0" required>
+                        <div class="summary-stat">
+                            <span class="summary-label">To Be Onboarded</span>
+                            <span class="summary-value onboard">{{ workersToOnboard }}</span>
                         </div>
                     </div>
 
-                    <!-- Readiness Date -->
-                    <div class="form-row" style="margin-top: 1rem; gap: 1rem; display: flex;">
+                    <!-- Readiness Date only -->
+                    <div class="form-row" style="margin-top: 1.25rem; display: flex;">
                         <div class="form-group" style="flex: 1;">
                             <label class="form-label" for="readyDate">Date of Readiness</label>
                             <input type="date" id="readyDate" name="readyDate" [(ngModel)]="readinessDate"

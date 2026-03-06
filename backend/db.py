@@ -59,8 +59,58 @@ def migrate_db():
     )
     ''')
 
+    # Seed missing workers so each contractor has 10
+    # WORKER_SEED is defined below — Python resolves it at call-time, not definition-time
+    for contractor_id, name, certs, years, area in WORKER_SEED:
+        cursor.execute(
+            "SELECT COUNT(*) FROM workers WHERE contractor_id = ? AND name = ?",
+            (contractor_id, name)
+        )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute(
+                "INSERT INTO workers (contractor_id, name, certifications, years_experience, area_of_experience) VALUES (?, ?, ?, ?, ?)",
+                (contractor_id, name, certs, years, area)
+            )
+
     conn.commit()
     conn.close()
+
+# Full worker seed list: 10 per contractor (contractor_ids: 5, 6, 7)
+WORKER_SEED = [
+    # Contractor 5 - Builder One
+    (5, 'Alice Smith',      'OSHA 30, CPR',                       5,  'Structural Steel'),
+    (5, 'Bob Jones',        'Heavy Machinery, Rigging',           8,  'Heavy Equipment'),
+    (5, 'Carlos Vega',      'OSHA 10, Fall Protection',          3,  'General Construction'),
+    (5, 'Diana Patel',      'First Aid, Scaffolding',             6,  'Scaffolding'),
+    (5, 'Ethan Brooks',     'Confined Space, HAZMAT',            10,  'Industrial Safety'),
+    (5, 'Fatima Noor',      'CPR, Welding Level 2',               4,  'Welding'),
+    (5, 'George Liu',       'Electrician Journeyman',             7,  'Electrical'),
+    (5, 'Hannah Roy',       'Crane Operator, OSHA 30',            9,  'Crane Operations'),
+    (5, 'Ivan Petrov',      'Concrete Finishing, OSHA 10',        2,  'Concrete Works'),
+    (5, 'Julia Torres',     'Plumbing, Fall Protection',          5,  'Plumbing'),
+    # Contractor 6 - BuildWell Inc.
+    (6, 'Charlie Brown',    'Welding, First Aid',                 3,  'Welding'),
+    (6, 'Karla Mendez',     'OSHA 30, Rigging',                  6,  'Rigging & Lifting'),
+    (6, 'Liam O Connor',   'Heavy Equipment, CPR',               8,  'Heavy Equipment'),
+    (6, 'Maya Singh',       'Scaffolding, OSHA 10',               4,  'Scaffolding'),
+    (6, 'Nathan Cole',      'Electrician Master, OSHA 30',        11, 'Electrical'),
+    (6, 'Olivia Hart',      'HAZMAT, Confined Space',             5,  'Hazardous Materials'),
+    (6, 'Pedro Alves',      'Concrete, Fall Protection',          7,  'Concrete Works'),
+    (6, 'Quinn Zhang',      'Piping, OSHA 10',                    3,  'Piping & Mechanical'),
+    (6, 'Rachel Kim',       'Welding Level 3, First Aid',         9,  'Welding'),
+    (6, 'Samuel Wright',    'Crane Operator, Rigging',            12, 'Crane Operations'),
+    # Contractor 7 - City Scaffolders
+    (7, 'David White',      'Electrician Master, OSHA 30',        12, 'Electrical'),
+    (7, 'Eve Black',        'Crane Operator, CPR',                6,  'Crane Operations'),
+    (7, 'Tom Harris',       'Scaffolding Adv, OSHA 30',           8,  'Scaffolding'),
+    (7, 'Uma Patel',        'Fall Protection, First Aid',         4,  'General Construction'),
+    (7, 'Victor Novak',     'Heavy Machinery, OSHA 10',           5,  'Heavy Equipment'),
+    (7, 'Wendy Adams',      'Welding, HAZMAT',                    7,  'Welding'),
+    (7, 'Xavier Diaz',      'Electrical, Confined Space',         9,  'Electrical'),
+    (7, 'Yara Hassan',      'Plumbing, OSHA 30',                  3,  'Plumbing'),
+    (7, 'Zach Martin',      'Rigging, Crane Level 1',             6,  'Rigging & Lifting'),
+    (7, 'Amelia Johansson', 'OSHA 30, Metal Framing',             11, 'Structural Steel'),
+]
 
 def init_db():
     if os.path.exists(DB_FILE):
@@ -178,19 +228,11 @@ def init_db():
     VALUES (?, ?, ?, ?)
     ''', users_data)
 
-    # Seed Workers for Contractors
-    workers_data = [
-        (5, 'Alice Smith', 'OSHA 30, CPR', 5),
-        (5, 'Bob Jones', 'Heavy Machinery', 8),
-        (6, 'Charlie Brown', 'Welding, First Aid', 3),
-        (7, 'David White', 'Electrician Master', 12),
-        (7, 'Eve Black', 'Crane Operator', 6)
-    ]
-    
+    # Seed Workers for Contractors — 10 per contractor
     cursor.executemany('''
-    INSERT INTO workers (contractor_id, name, certifications, years_experience)
-    VALUES (?, ?, ?, ?)
-    ''', workers_data)
+    INSERT INTO workers (contractor_id, name, certifications, years_experience, area_of_experience)
+    VALUES (?, ?, ?, ?, ?)
+    ''', WORKER_SEED)
 
     conn.commit()
     conn.close()
