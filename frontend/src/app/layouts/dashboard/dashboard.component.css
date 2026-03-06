@@ -105,3 +105,9 @@
     display: flex;
     background: var(--color-bg-main);
 }
+
+.route-content > :not(router-outlet) {
+    flex: 1;
+    width: 100%;
+    display: flex;
+}
