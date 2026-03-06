@@ -19,7 +19,7 @@ def get_password_hash(password):
 
 def init_db():
     if os.path.exists(DB_FILE):
-        os.remove(DB_FILE)
+        return
     
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
